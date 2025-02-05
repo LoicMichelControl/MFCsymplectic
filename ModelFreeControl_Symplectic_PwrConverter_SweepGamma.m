@@ -114,6 +114,8 @@
     for IndexGamma = 1:5
 
         Gamma_ = Gamma_vec(IndexGamma);
+
+        fprintf('Gamma_0 = %e \n', Gamma_);
     
         % Simulation loop
         for k = 1:N
@@ -181,6 +183,7 @@
                 if k > 3
         
                     % Computation of the variational integrator
+                    % (Gamma_ is modified w.r.t. the 'Gamma_vec' vector - Epsilon_M is kept constant)
                     gamma_t(k) = (Depsilon - Epsilon_M)*Gamma_ + 2*gamma_t(k-1) - gamma_t(k-1);
         
                     gamma_t(k-2) = gamma_t(k-1);

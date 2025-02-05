@@ -73,7 +73,7 @@
         Kp = 2; % proportional corrector (in the model-free law)
     
         Kgamma = 1; % variational param
-        Gamma_ = 5e-8; % variational param
+        Gamma_0 = 5e-8; % variational param
         Epsilon_M = 0.1; % variational param
     
         % ----------------------------------------
@@ -94,7 +94,7 @@
         Kp = 2; % proportional corrector (in the model-free law)
 
         Kgamma = 1; % variational param
-        Gamma_ = 5e-8; % variational param
+        Gamma_0 = 5e-8; % variational param
         Epsilon_M = 0.1; % variational param
 
         % ----------------------------------------
@@ -114,6 +114,8 @@
     for IndexEpsilon = 1:5
 
         Epsilon_ = EpsilonM_vec(IndexEpsilon);
+
+        fprintf('Epsilon_M = %e \n', Epsilon_);
     
         % Simulation loop
         for k = 1:N
@@ -181,7 +183,8 @@
                 if k > 3
         
                     % Computation of the variational integrator
-                    gamma_t(k) = (Depsilon - Epsilon_M)*Gamma_ + 2*gamma_t(k-1) - gamma_t(k-1);
+                    % (Epsilon_ is modified w.r.t. the 'EpsilonM_vec' vector - Gamma_0 is kept constant)
+                    gamma_t(k) = (Depsilon - Epsilon_)*Gamma_0 + 2*gamma_t(k-1) - gamma_t(k-1);
         
                     gamma_t(k-2) = gamma_t(k-1);
                     gamma_t(k-1) = gamma_t(k);
