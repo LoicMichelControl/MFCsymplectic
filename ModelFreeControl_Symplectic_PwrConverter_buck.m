@@ -15,23 +15,26 @@
     % select which case to simulate by setting 'PowerControl',
     % 'VarIntegrator' and the Delta_R perturbation:
     %
-    % -> Fig. 2 : PowerControl = 0, VarIntegrator = 0, Delta_R = 1 (l.68)
-    % -> Fig. 3-4 : PowerControl = 0, VarIntegrator = 1, Delta_R = 1 (l.68)
-    % -> Fig. 5 : PowerControl = 0, VarIntegrator = 0, Delta_R = 5 (l.67)
-    % -> Fig. 6 : PowerControl = 0, VarIntegrator = 1, Delta_R = 5 (l.67)
-    % -> Fig. 7 : PowerControl = 1, VarIntegrator = 0, Delta_R = 1 (l.68)
-    % -> Fig. 8-9 : PowerControl = 1, VarIntegrator = 1, Delta_R = 1 (l.68)
+    % -> Fig. 2 : PowerControl = 0, VarIntegrator = 0, Delta_R = 1 
+    % -> Fig. 3-4 : PowerControl = 0, VarIntegrator = 1, Delta_R = 1 
+    % -> Fig. 5 : PowerControl = 0, VarIntegrator = 0, Delta_R = 5 
+    % -> Fig. 6 : PowerControl = 0, VarIntegrator = 1, Delta_R = 5 
+    % -> Fig. 7 : PowerControl = 1, VarIntegrator = 0, Delta_R = 1 
+    % -> Fig. 8(top & bottom) : PowerControl = 0 or = 1, VarIntegrator = 1, Delta_R = 1 
 
     %=================================================================
     %=================================================================
-    
-    
+      
     clc
     clear all
     close all
     warning off
     
     %---------------------------------------
+    % For the case A.1/ (voltage control - stable perturbation) -> select Delta_R = 1
+    % For the case A.2/ (voltage control - unstable perturbation) -> select Delta_R = 5
+    % For the case B/ (power control - stable perturbation)  -> select Delta_R = 1
+
     PowerControl = 0;
     % '0' for voltage control
     % '1' for power control
@@ -39,11 +42,16 @@
     % '0' for standard model-free control
     % '1' for variationnal-based model-free control
     %---------------------------------------
-    
+    Delta_R = 1;      % increase of resistance - stable perturbation (voltage & pwr cont.)
+    %Delta_R = 5;      % increase of resistance - unstable perturbation (voltage cont.)
+
+    Delta_C = 1e-9;   % increase of capacitor (voltage & pwr cont.)
+
     
     % Simulation parameters
     tspan = [0 0.01];
     N = 10000;
+    h = 1e-6;
     
     % Buck circuit - nominal parameters
     
@@ -59,15 +67,7 @@
     
     SecondPerturbation = 1;
     TimeSecPerturbation = 0.006;
-
-    % For the case A.1/ (voltage control - stable perturbation)  -> select Delta_R = 1
-    % For the case A.2/ (voltage control - unstable perturbation) -> select Delta_R = 5
-    % For the case B/ (power control - stable perturbation)  -> select Delta_R = 1
-    
-    %Delta_R = 5;     % increase of resistance - unstable perturbation (voltage cont.)
-    Delta_R = 1;      % increase of resistance - stable perturbation (voltage & pwr cont.)
-    Delta_C = 1e-9;   % increase of capacitor (voltage & pwr cont.)
-    
+     
     saturation = 1;            % Enable saturation on the control output
     
     
@@ -85,8 +85,8 @@
         gamma0 = 1; % init. of the variational integrator
         Kp = 2; % proportional corrector (in the model-free law)
     
-        Kgamma = 1; % variational param
-        Gamma_ = 5e-8; % variational param
+        C_gamma = 1; % variational param
+        Gamma_ = h^2 / C_gamma; % variational param
         Epsilon_M = 0.1; % variational param
     
         % ----------------------------------------
@@ -106,15 +106,13 @@
         gamma0 = 3; % init. of the variational integrator
         Kp = 2; % proportional corrector (in the model-free law)
     
-        Kgamma = 1; % variational param
-        Gamma_ = 5e-8; % variational param
+        C_gamma = 1; % variational param
+        Gamma_ = h^2 / C_gamma; % variational param
         Epsilon_M = 0.1; % variational param
     
         % ----------------------------------------
     end
-    
-    h = (tspan(2) - tspan(1))/N;
-    
+        
     t = tspan(1)+[0:N]*(tspan(2) - tspan(1))/N;
     
     
@@ -200,7 +198,7 @@
                 end
     
                 % Computation of the variationnal-based model-free control law
-                u_(k) = u_(k-1) - (gamma_t(k))*(dy(k-1) - dy_reference(k-1)) +  P_action(k) - Kgamma * ((gamma_t(k) - gamma_t(k-1))/hh);
+                u_(k) = u_(k-1) - (gamma_t(k))*(dy(k-1) - dy_reference(k-1)) +  P_action(k) - C_gamma * ((gamma_t(k) - gamma_t(k-1))/hh);
     
             else
     
@@ -296,19 +294,19 @@
     
         figure('name','Controlled output voltage')
         subplot(2,1,1)
-        plot(t(1:end), y,'r', 'linewidth', 3)
+        plot(t(1:end), y,'r', 'linewidth', 4)
         hold on
-        plot(t(1:end-1), y_reference, '--b', 'linewidth', 3)
+        plot(t(1:end-1), y_reference, '--b', 'linewidth', 4)
         grid on
-        xlabel('time (s)','FontSize',FtSize, 'Interpreter','latex');
+     %   xlabel('time (s)','FontSize',FtSize, 'Interpreter','latex');
         ylabel('output voltage (V)','FontSize',FtSize, 'Interpreter','latex');
         set(gca,'fontsize',FtSize);
         set(gcf,'color',[1 1 1]);
         legend('output $v$', 'ref. output $v^*$', 'FontSize',FtSize, 'Interpreter', 'latex')
         subplot(2,1,2)
-        plot(t(1:end-1), duty_cycle_vec, 'linewidth', 3)
+        plot(t(1:end-1), duty_cycle_vec, 'linewidth', 4)
         grid on
-        xlabel('time (s)','FontSize',FtSize, 'Interpreter','latex');
+        xlabel('Time (s)','FontSize',FtSize, 'Interpreter','latex');
         ylabel('duty-cycle $u$','FontSize',FtSize, 'Interpreter','latex');
         set(gcf,'color',[1 1 1]);
         set(gca,'fontsize',FtSize);
@@ -316,15 +314,15 @@
         if (VarIntegrator == 1)
     
             figure('name','Gamma variation')
-            semilogy(t(1:end-1),  gamma_t, 'linewidth', 3)
+            semilogy(t(1:end-1), gamma_t, 'linewidth', 4)
             grid on
             xlabel('Time (s)','FontSize',FtSize, 'Interpreter','latex');
             ylabel('$\gamma (t)$','FontSize',FtSize, 'Interpreter','latex');
             set(gcf,'color',[1 1 1]);
             set(gca,'fontsize',FtSize);
             ax = gca;
-            ax.YAxis.Exponent = -5;
-    
+            ax.YAxis.Exponent = 0;
+
         end
     
     
@@ -332,19 +330,19 @@
     
         figure('name','Controlled output Power')
         subplot(2,1,1)
-        plot(t(1:end), y,'r', 'linewidth', 3)
+        plot(t(1:end), y,'r', 'linewidth', 4)
         hold on
-        plot(t(1:end-1), y_reference, '--b', 'linewidth', 3)
+        plot(t(1:end-1), y_reference, '--b', 'linewidth', 4)
         grid on
-        xlabel('time (s)','FontSize', FtSize, 'Interpreter','latex');
+      %  xlabel('time (s)','FontSize', FtSize, 'Interpreter','latex');
         ylabel('output power (W)','FontSize', FtSize, 'Interpreter','latex');
         set(gca,'fontsize', FtSize);
         set(gcf,'color',[1 1 1]);
         legend('output $p$', 'ref. output $p^*$', 'FontSize', FtSize, 'Interpreter', 'latex')
         subplot(2,1,2)
-        plot(t(1:end-1), duty_cycle_vec, 'linewidth', 3)
+        plot(t(1:end-1), duty_cycle_vec, 'linewidth', 4)
         grid on
-        xlabel('time (s)','FontSize', FtSize, 'Interpreter','latex');
+        xlabel('Time (s)','FontSize', FtSize, 'Interpreter','latex');
         ylabel('duty-cycle $u$','FontSize', FtSize, 'Interpreter','latex');
         set(gcf,'color',[1 1 1]);
         set(gca,'fontsize', FtSize);
@@ -352,9 +350,9 @@
         if (VarIntegrator == 1)
     
             figure('name','Gamma variation')
-            semilogy(t(1:end-1),  gamma_t, 'linewidth', 3)
+            semilogy(t(1:end-1),  gamma_t, 'linewidth', 4)
             grid on
-            xlabel('time (s)','FontSize', FtSize, 'Interpreter','latex');
+            xlabel('Time (s)','FontSize', FtSize, 'Interpreter','latex');
             ylabel('$\gamma (t)$','FontSize', FtSize, 'Interpreter','latex');
             set(gcf,'color',[1 1 1]);
             set(gca,'fontsize', FtSize);

@@ -35,7 +35,8 @@
   % Simulation parameters
     tspan = [0 0.01];
     N = 10000;
-    
+    h = 1e-6;
+  
     % Buck circuit - nominal parameters
     
     R = 10;
@@ -72,8 +73,9 @@
         gamma0 = 1; % init. of the variational integrator
         Kp = 2; % proportional corrector (in the model-free law)
     
-        Kgamma = 1; % variational param
-        Gamma_0 = 5e-8; % variational param
+        C_gamma = 1; % variational param
+        Gamma_ = h^2 / C_gamma;
+        Gamma_0 = Gamma_;
         Epsilon_M = 0.1; % variational param
     
         % ----------------------------------------
@@ -93,15 +95,13 @@
         gamma0 = 3; % init. of the variational integrator
         Kp = 2; % proportional corrector (in the model-free law)
 
-        Kgamma = 1; % variational param
-        Gamma_0 = 5e-8; % variational param
+        C_gamma = 1; % variational param
+        Gamma_ = h^2 / C_gamma;
         Epsilon_M = 0.1; % variational param
 
         % ----------------------------------------
     end
-    
-    h = (tspan(2) - tspan(1))/N;
-    
+        
     t = tspan(1)+[0:N]*(tspan(2) - tspan(1))/N;
     
     
@@ -109,9 +109,9 @@
     % must be integrated within the alpha and Gamma parameters for more
     % visibility ;)
 
-    EpsilonM_vec = [Epsilon_M/100, Epsilon_M/10, Epsilon_M, Epsilon_M*10, Epsilon_M*100 ];
+    EpsilonM_vec = [Epsilon_M/1e4, Epsilon_M, Epsilon_M*1e4 ];
 
-    for IndexEpsilon = 1:5
+    for IndexEpsilon = 1:3
 
         Epsilon_ = EpsilonM_vec(IndexEpsilon);
 
@@ -196,7 +196,7 @@
                 end
                 
                 % Computation of the variationnal-based model-free control law
-                u_(k) = u_(k-1) - (gamma_t(k))*(dy(k-1) - dy_reference(k-1)) +  P_action(k) - Kgamma * ((gamma_t(k) - gamma_t(k-1))/hh); 
+                u_(k) = u_(k-1) - (gamma_t(k))*(dy(k-1) - dy_reference(k-1)) +  P_action(k) - C_gamma * ((gamma_t(k) - gamma_t(k-1))/hh); 
     
             else
 
@@ -298,30 +298,30 @@
     
     color_vec = ['b', '--r', 'oc', '.g', 'y'];
     
-            figure('name','Gamma variation vs. epsilon_M')
-            for ii = 1:5
-            semilogy(t(1:end-1),  abs(gamma_curves(ii,:)), color_vec(ii), 'linewidth', 3)
-            hold on
-            end
-            grid on
-            xlabel('time (s)','FontSize', FtSize, 'Interpreter','latex');
-            ylabel('$\gamma(t)$','FontSize',FtSize, 'Interpreter','latex');
-            legend('$\varepsilon_M/100$','$\varepsilon_M/10$','$\varepsilon_M$','$10 \varepsilon_M$','$100 \varepsilon_M$', 'FontSize', FtSize, 'Interpreter','latex')
-            set(gcf,'color',[1 1 1]);
-            set(gca,'fontsize',FtSize);
-            ax = gca;
-            ax.YAxis.Exponent = -5;
+            % figure('name','Gamma variation vs. epsilon_M')
+            % for ii = 1:5
+            % semilogy(t(1:end-1),  abs(gamma_curves(ii,:)), color_vec(ii), 'linewidth', 3)
+            % hold on
+            % end
+            % grid on
+            % xlabel('time (s)','FontSize', FtSize, 'Interpreter','latex');
+            % ylabel('$\gamma(t)$','FontSize',FtSize, 'Interpreter','latex');
+            % legend('$\varepsilon_M/100$','$\varepsilon_M/10$','$\varepsilon_M$','$10 \varepsilon_M$','$100 \varepsilon_M$', 'FontSize', FtSize, 'Interpreter','latex')
+            % set(gcf,'color',[1 1 1]);
+            % set(gca,'fontsize',FtSize);
+            % ax = gca;
+            % ax.YAxis.Exponent = -5;
     
 
             figure('name','Tracking error vs. epsilon_M')
-            for ii = 1:5
-            semilogy(t(1:end-1),  abs(tracking_error(ii,:)), color_vec(ii), 'linewidth', 3)
+            for ii = 1:3
+            semilogy(t(1:end-1),  abs(tracking_error(ii,:)), color_vec(ii), 'linewidth', 4)
             hold on
             end
             grid on
-            xlabel('time (s)','FontSize', FtSize, 'Interpreter','latex');
+            xlabel('Time (s)','FontSize', FtSize, 'Interpreter','latex');
             ylabel('tracking error','FontSize', FtSize, 'Interpreter','latex');
-            legend('$\varepsilon_M/100$','$\varepsilon_M/10$','$\varepsilon_M$','$10 \varepsilon_M$','$100 \varepsilon_M$', 'FontSize', FtSize, 'Interpreter','latex')
+            legend('$\varepsilon_M/10^4$','$\varepsilon_M$','$10^4 \varepsilon_M$', 'FontSize', FtSize, 'Interpreter','latex')
             set(gcf,'color',[1 1 1]);
             set(gca,'fontsize', FtSize);
             ax = gca;
@@ -329,8 +329,4 @@
     
  
 
-    fprintf("End of the program \n")
-
-    %======================================
-    %======================================
-
+    fprintf("End of the program \n");

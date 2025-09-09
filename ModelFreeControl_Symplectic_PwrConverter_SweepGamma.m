@@ -72,7 +72,7 @@
         gamma0 = 1; % init. of the variational integrator
         Kp = 2; % proportional corrector (in the model-free law)
     
-        Kgamma = 1; % variational param
+        C_gamma = 1; % variational param
         Gamma_0 = 5e-8; % variational param
         Epsilon_M = 0.1; % variational param
     
@@ -93,7 +93,7 @@
         gamma0 = 3; % init. of the variational integrator
         Kp = 2; % proportional corrector (in the model-free law)
     
-        Kgamma = 1; % variational param
+        C_gamma = 1; % variational param
         Gamma_0 = 5e-8; % variational param
         Epsilon_M = 0.1; % variational param
 
@@ -111,7 +111,7 @@
 
     Gamma_vec = [Gamma_0/100, Gamma_0/10, Gamma_0, Gamma_0*10, Gamma_0*100 ];
 
-    for IndexGamma = 1:5
+    for IndexGamma = 1:5 %1:3
 
         Gamma_ = Gamma_vec(IndexGamma);
 
@@ -196,7 +196,7 @@
                 end
                 
                 % Computation of the variationnal-based model-free control law
-                u_(k) = u_(k-1) - (gamma_t(k))*(dy(k-1) - dy_reference(k-1)) +  P_action(k) - Kgamma * ((gamma_t(k) - gamma_t(k-1))/hh); 
+                u_(k) = u_(k-1) - (gamma_t(k))*(dy(k-1) - dy_reference(k-1)) +  P_action(k) - C_gamma * ((gamma_t(k) - gamma_t(k-1))/hh); 
     
             else
 
@@ -296,21 +296,21 @@
     
     %%%%%%%%% PLOT SECTION
     
-    color_vec = ['b', '--r', 'oc', '.g', 'y'];
+    color_vec = ['ob', 'or', 'oc', '.--g', '--y'];
     
-            figure('name','Gamma variation vs. Gamma_0')
-            for ii = 1:5
-            semilogy(t(1:end-1),  abs(gamma_curves(ii,:)), color_vec(ii), 'linewidth', 3)
-            hold on
-            end
-            grid on
-            xlabel('time (s)','FontSize', FtSize, 'Interpreter','latex');
-            ylabel('$\gamma(t)$','FontSize',FtSize, 'Interpreter','latex');
-            legend('$\Gamma_0/100$','$\Gamma_0/10$','$\Gamma_0$','$10 \Gamma_0$','$100 \Gamma_0$', 'FontSize', FtSize, 'Interpreter','latex')
-            set(gcf,'color',[1 1 1]);
-            set(gca,'fontsize',FtSize);
-            ax = gca;
-            ax.YAxis.Exponent = -5;
+            % figure('name','Gamma variation vs. Gamma_0')
+            % for ii = 1:5
+            % semilogy(t(1:end-1),  abs(gamma_curves(ii,:)), color_vec(ii), 'linewidth', 3)
+            % hold on
+            % end
+            % grid on
+            % xlabel('time (s)','FontSize', FtSize, 'Interpreter','latex');
+            % ylabel('$\gamma(t)$','FontSize',FtSize, 'Interpreter','latex');
+            % legend('$\Gamma_0/100$','$\Gamma_0/10$','$\Gamma_0$','$10 \Gamma_0$','$100 \Gamma_0$', 'FontSize', FtSize, 'Interpreter','latex')
+            % set(gcf,'color',[1 1 1]);
+            % set(gca,'fontsize',FtSize);
+            % ax = gca;
+            % ax.YAxis.Exponent = -5;
     
 
             figure('name','Tracking error vs. Gamma_0')
